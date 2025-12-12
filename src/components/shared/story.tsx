@@ -20,16 +20,18 @@ export const Story: React.FC = () => {
   const [active, setActive] = useState(0);
   const activeRef = useRef(0);
   const isAnimatingRef = useRef(false);
+  const pendingIndexRef = useRef<number | null>(null);
+  const pendingDirectionRef = useRef(1);
 
   useEffect(() => {
     if (!containerRef.current || !textRef.current) return;
 
     const totalSteps = steps.length;
 
-    ScrollTrigger.create({
+    const trigger = ScrollTrigger.create({
       trigger: containerRef.current,
       start: "top 100px",
-      end: `+=${totalSteps * 120}%`,
+      end: `+=${totalSteps * 60}%`,
       pin: true,
       scrub: 1,
       onUpdate: (self) => {
@@ -38,9 +40,15 @@ export const Story: React.FC = () => {
           Math.floor(self.progress * totalSteps),
         );
 
-        if (index !== activeRef.current && !isAnimatingRef.current) {
-          animateTo(index, self.direction);
+        if (index === activeRef.current) return;
+
+        if (isAnimatingRef.current) {
+          pendingIndexRef.current = index;
+          pendingDirectionRef.current = self.direction;
+          return;
         }
+
+        animateTo(index, self.direction);
       },
     });
 
@@ -56,6 +64,13 @@ export const Story: React.FC = () => {
         .timeline({
           onComplete: () => {
             isAnimatingRef.current = false;
+
+            const pending = pendingIndexRef.current;
+            if (pending !== null && pending !== activeRef.current) {
+              pendingIndexRef.current = null;
+              animateTo(pending, pendingDirectionRef.current);
+              return;
+            }
           },
         })
         .to(textRef.current, {
@@ -78,7 +93,7 @@ export const Story: React.FC = () => {
     }
 
     return () => {
-      ScrollTrigger.getAll().forEach((t) => t.kill());
+      trigger.kill();
     };
   }, []);
 
