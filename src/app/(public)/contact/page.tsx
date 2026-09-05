@@ -1,6 +1,6 @@
 import React from "react";
 import type { Metadata } from "next";
-import { UnderConstruction } from "@/components/shared/under-construction";
+import { ContactInfo } from "@/components/shared/contact-info";
 
 export const metadata: Metadata = {
   title: "Contact",
@@ -11,6 +11,6 @@ export const metadata: Metadata = {
   },
 };
 
-const ContactPage: React.FC = () => <UnderConstruction />;
+const ContactPage: React.FC = () => <ContactInfo />;
 
 export default ContactPage;
